@@ -1,0 +1,35 @@
+name: Verify audio merge engine
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Syntax checks
+        run: |
+          node --check app.js
+          node --check audio-core.mjs
+          node --check sw.js
+          python -m json.tool manifest.webmanifest >/dev/null
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Generate fixtures
+        run: bash tests/generate-fixtures.sh
+      - name: Test merge engine
+        run: node tests/test-core.mjs
+      - name: Prove M4A AAC payload is unchanged
+        run: bash tests/verify-payloads.sh
+      - name: Decode all merged outputs
+        run: |
+          for f in tests/.tmp/merged.m4a tests/.tmp/merged.mp3 tests/.tmp/merged.wav tests/.tmp/merged.aac; do
+            ffprobe -v error "$f" >/dev/null
+            ffmpeg -v error -i "$f" -f null -
+          done

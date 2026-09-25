@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=yes">
+  <meta name="theme-color" content="#0b0c0f">
+  <meta name="color-scheme" content="dark light">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SoundStitch">
+  <meta name="format-detection" content="telephone=no">
+  <title>SoundStitch — local audio merger</title>
+  <meta name="description" content="Merge compatible M4A, MP3, WAV, or AAC audio files locally on your device without re-encoding.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="SoundStitch">
+        <span class="mark" aria-hidden="true">〰</span>
+        <strong>SoundStitch</strong>
+        <span class="local-pill">LOCAL</span>
+      </div>
+      <div class="top-actions">
+        <button id="diag-btn" class="diag-btn" type="button" title="Copy full diagnostics to clipboard" aria-label="Copy diagnostics">diag</button>
+        <button id="clear-btn" class="text-btn" type="button" title="Clear selected files">Clear</button>
+      </div>
+    </header>
+
+    <input id="file-input" class="visually-hidden" type="file" multiple accept="audio/*,.m4a,.m4b,.mp4,.mp3,.wav,.wave,.aac,.adts">
+
+    <section class="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title">Merge audio. No upload.</h1>
+      <p>Compatible M4A · MP3 · WAV · AAC are stitched locally without re-encoding.</p>
+      <button id="select-hero" class="select-hero" type="button">Select audio files</button>
+      <p id="install-hint" class="install-hint">On iPhone: Safari → Share → Add to Home Screen</p>
+    </section>
+
+    <section id="workspace" class="workspace" hidden>
+      <div class="merge-strip">
+        <button id="merge-btn" class="merge-btn" type="button" disabled>Merge audio files</button>
+        <div class="output-wrap">
+          <label for="output-name">Output</label>
+          <input id="output-name" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="merged-audio">
+        </div>
+      </div>
+
+      <div id="progress" class="progress" hidden aria-hidden="true"><div id="progress-fill" class="progress-fill"></div></div>
+      <div class="status-line">
+        <span id="status" data-kind="neutral">Select files.</span>
+        <a id="download-again" class="download-again" hidden>Download</a>
+      </div>
+
+      <div class="toolbar">
+        <div class="sort-wrap">
+          <label for="sort-mode">Order</label>
+          <select id="sort-mode" aria-label="Sort files">
+            <option value="dateAsc">Date: oldest → newest</option>
+            <option value="dateDesc">Date: newest → oldest</option>
+            <option value="nameAsc">Filename: A → Z</option>
+            <option value="manual">Manual</option>
+          </select>
+        </div>
+        <span id="file-count" class="file-count"></span>
+        <button id="add-more" class="add-btn" type="button">+ Files</button>
+      </div>
+
+      <p class="date-note">“Date” uses embedded recording/container metadata when available; otherwise the browser-provided modified date.</p>
+      <div id="file-list" class="file-list" role="list" aria-label="Audio merge order"></div>
+    </section>
+  </main>
+
+  <div id="name-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="name-title" aria-hidden="true">
+    <div class="modal-card">
+      <h2 id="name-title">Merged filename</h2>
+      <input id="name-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="merged-audio">
+      <div class="modal-actions">
+        <button id="name-cancel" class="secondary-btn" type="button">Later</button>
+        <button id="name-ok" class="primary-btn" type="button">Use name</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

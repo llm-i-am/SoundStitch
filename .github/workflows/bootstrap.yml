@@ -1,0 +1,67 @@
+name: Bootstrap verified SoundStitch
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: bootstrap-soundstitch
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout staging tree
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct exact verified source modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat _bootstrap/app-00 _bootstrap/app-01 _bootstrap/app-02 _bootstrap/app-03 _bootstrap/app-04 | base64 -d > app.js
+          cat _bootstrap/audio-gz-00 _bootstrap/audio-gz-01 _bootstrap/audio-gz-02 | base64 -d | gzip -dc > audio-core.mjs
+          test "$(git hash-object app.js)" = "33ef212a91bc81c6672578204c8c3629a3dc0055"
+          test "$(git hash-object audio-core.mjs)" = "8f5d35f05b4b88ccf23938524764a4ed3ab9e487"
+          rm -rf _bootstrap .github/workflows/bootstrap.yml
+
+      - name: Verify JavaScript and audio merge engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check app.js
+          node --check audio-core.mjs
+          bash tests/generate-fixtures.sh
+          node tests/test-core.mjs
+          bash tests/verify-payloads.sh
+
+      - name: Verify exact repository tree and publish main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -A
+          test "$(git write-tree)" = "2a6ab7a9b517edef6d5bbee8efa4c43d144c0f70"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Import verified SoundStitch"
+          git push origin HEAD:main
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload verified static site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+      - name: Deploy verified site
+        id: deployment
+        uses: actions/deploy-pages@v4
