@@ -35,6 +35,9 @@ jobs:
           test "$(git hash-object audio-core.mjs)" = "8f5d35f05b4b88ccf23938524764a4ed3ab9e487"
           rm -rf _bootstrap .github/workflows/bootstrap.yml
 
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+
       - name: Verify JavaScript and audio merge engine
         shell: bash
         run: |
